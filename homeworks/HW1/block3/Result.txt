@@ -1,0 +1,5 @@
+Среднее значение поля price (with out mapreduce): 152.7206871868289
+Дисперсия поля price (with out mapreduce): 57672.84569843345
+
+Среднее значение поля price (with mapreduce): 152.7206871868289
+Дисперсия поля price (with mapreduce): 57672.84569843345

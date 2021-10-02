@@ -1,0 +1,58 @@
+См. флаги “-mkdir” и “-touchz“
+1. [2 балла] Создайте папку в корневой HDFS-папке
+    hdfs dfs -mkdir /folder
+
+2. [2 балла] Создайте в созданной папке новую вложенную папку.
+    hdfs dfs -mkdir -p /folder/folder1/folder2/folder3
+
+3. [3 балла] Что такое Trash в распределенной FS? Как сделать так, чтобы файлы удалялись сразу, минуя “Trash”?
+    После удаления файл помещается в специальную директорию (корзину с названием .Trash). Сделано это с целью предотвратить случайное удаление файлов. Для удаления файла минуя корзину надо использовать параметр -skipTrash
+    hdfs dfs -rm -skipTrash file
+
+4. [2 балла] Создайте пустой файл в подпапке из пункта 2.
+    hdfs dfs -touchz /folder/folder1/folder2/folder3/empty_file
+
+5. [2 балла] Удалите созданный файл.
+    hdfs dfs -rm -skipTrash /folder/folder1/folder2/folder3/empty_file
+    out: Deleted /folder/folder1/folder2/folder3/empty_file
+
+6. [2 балла] Удалите созданные папки.
+    hdfs dfs -rm -R /folder
+    Deleted /folder
+
+См. флаги “-put”, “-cat”, “-tail”, “-cp”
+1. [3 балла] Скопируйте любой в новую папку на HDFS
+    hdfs dfs -mkdir /new_folder
+    hdfs dfs -put new_file /new_folder
+
+2. [3 балла] Выведите содержимое HDFS-файла на экран.
+    hdfs dfs -cat /new_folder/new_file
+
+3. [3 балла] Выведите содержимое нескольких последних строчек HDFS-файла на экран.
+    hdfs dfs -tail /new_folder/new_file
+        или
+    hdfs dfs -cat /new_folder/new_file | tail -2
+
+4. [3 балла] Выведите содержимое нескольких первых строчек HDFS-файла на экран.
+    hadoop fs -cat /new_folder/new_file | head -2
+
+5. [3 балла] Переместите копию файла в HDFS на новую локацию.
+    hdfs dfs -mkdir /cp_folder
+    hadoop fs -cp /new_folder/new_file /cp_folder/cp_new_file
+
+Для “hdfs dfs”, см. “-setrep -w”
+hdfs fsck /path -files - blocks -locations
+Задачи:
+2. [4 баллов] Изменить replication factor для файла. Как долго занимает время на увеличение /
+уменьшение числа реплик для файла?
+    hdfs dfs -setrep -w 2 /folder/new_file
+    Уменьшение работает гораздо быстрей, чем увеличение фактора репликации. Что и логично, удалить блоки из нод гораздо быстрей, чем скопировать и переместить блоки на новую
+
+3. [4 баллов] Найдите информацию по файлу, блокам и их расположениям с помощью “hdfs fsck”
+    hdfs fsck /new_folder/new_file -files -blocks -locations
+
+4. [4 баллов] Получите информацию по любому блоку из п.2 с помощью "hdfs fsck -blockId”.
+Обратите внимание на Generation Stamp (GS number).
+    hdfs fsck -blockId blk_1073741832
+
+
