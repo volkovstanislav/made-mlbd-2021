@@ -43,18 +43,17 @@ SORT BY count DESC
 LIMIT 1;
 
 -- 3 Самые популярные исполнители 10 самых популярных тегов ластфм - 10 баллов
-
  -- выводим топ популярных артистов
 SELECT RS.artist_lastfm
 FROM (
-	-- при помощи ранка отранжируем в порядке убывания по кол-во прослушиваний и оставим топ-10 :)
+	-- при помощи ранка отранжируем в порядке убывания по кол-во скробблов и оставим топ-10 :)
     SELECT TG.artist_lastfm, RANK() OVER (ORDER BY TG.cnt DESC) AS raiting
 	FROM (
-		-- формируем таблицу формата артист и кол-во прослушиваний для топ-10 самых популярных тэгов
-    	SELECT artist_lastfm, SUM(listeners_lastfm) as cnt 
+		-- формируем таблицу формата артист и сумма скробблов для топ-10 самых популярных тэгов
+    	SELECT artist_lastfm, SUM(scrobbles_lastfm) as cnt 
 		FROM artists LATERAL VIEW explode(split(tags_lastfm, ';')) l as tags
 		WHERE tags IN ( 
-			-- Отбираем топ-10 самых популярных тегов
+			-- Отбираем топ-10 самых популярных тэгов
 		    SELECT T.tags
 		    FROM (
 		        SELECT TAB.tags, COUNT(*) as cnt
@@ -64,16 +63,16 @@ FROM (
 		            GROUP BY TAB.tags
 		            SORT BY cnt DESC
 		            LIMIT 10
-		            ) T
-		        )
-		GROUP BY tags, artist_lastfm
+		    ) T
+		)
+		GROUP BY artist_lastfm
     ) TG
 ) RS 
 WHERE RS.raiting <= 10
 
 -- 4 любой другой инсайт на ваше усмотрение - 10 баллов
- -- Топ-10 популярных исполнителей (по прослушиваниям) в России в категории рок :)
-SELECT artist_lastfm, SUM(listeners_lastfm) as sum_list 
+ -- Топ-10 популярных исполнителей (по скробблам) в России в категории рок. Скромно, но со вкусом :)
+SELECT artist_lastfm, SUM(scrobbles_lastfm) as sum_list 
 FROM artists LATERAL VIEW explode(split(tags_lastfm, ';')) l as tags
 WHERE tags = 'rock' AND country_lastfm = 'Russia'
 GROUP BY artist_lastfm
