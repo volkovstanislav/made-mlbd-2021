@@ -30,48 +30,51 @@ FROM
   FROM artists) T 
 WHERE R.raiting = 1;
 
+
 -- 2 Самый популярный тэг на ластфм - 10 баллов
  -- шаг 1 разбиваем массивы на слова
- -- шаг 2 группируем, cсчитаем кол-во
+ -- шаг 2 группируем, cчитаем кол-во
  -- шаг 3 сортируем и оставляем топ-1
-SELECT TAB.tags, COUNT(*) as count
-FROM (
-    SELECT EXPLODE(SPLIT(tags_lastfm, ';')) as tags
-    FROM artists) TAB
-GROUP BY TAB.tags
-SORT BY count DESC
+SELECT tags, COUNT(*) AS cnt
+FROM artists LATERAL VIEW explode(split(tags_lastfm, ';')) l as tags
+WHERE tags <> ''
+GROUP BY tags
+SORT BY cnt DESC
 LIMIT 1;
 
+
 -- 3 Самые популярные исполнители 10 самых популярных тегов ластфм - 10 баллов
- -- выводим топ популярных артистов
-SELECT RS.artist_lastfm
+-- создаем таблицу из топ-10 самых популярных тега
+CREATE TABLE top10 as
+SELECT T.tags
 FROM (
-	-- при помощи ранка отранжируем в порядке убывания по кол-во скробблов и оставим топ-10 :)
-    SELECT TG.artist_lastfm, RANK() OVER (ORDER BY TG.cnt DESC) AS raiting
-	FROM (
-		-- формируем таблицу формата артист и сумма скробблов для топ-10 самых популярных тэгов
-    	SELECT artist_lastfm, SUM(scrobbles_lastfm) as cnt 
-		FROM artists LATERAL VIEW explode(split(tags_lastfm, ';')) l as tags
-		WHERE tags IN ( 
-			-- Отбираем топ-10 самых популярных тэгов
-		    SELECT T.tags
-		    FROM (
-		        SELECT TAB.tags, COUNT(*) as cnt
-		        FROM (
-		            SELECT EXPLODE(SPLIT(tags_lastfm, ';')) as tags
-		            FROM artists) TAB
-		            GROUP BY TAB.tags
-		            SORT BY cnt DESC
-		            LIMIT 10
-		    ) T
-		)
-		GROUP BY artist_lastfm
-    ) TG
-) RS 
-WHERE RS.raiting <= 10
+    SELECT tags, COUNT(*) AS cnt
+    FROM artists LATERAL VIEW explode(split(tags_lastfm, ';')) l as tags
+    WHERE tags <> ''
+    GROUP BY tags
+    SORT BY cnt DESC
+    LIMIT 10
+) T
+
+-- создаем таблицу из исполнителей и кол-во прослушиваний в топ10 топ-10 самых популярных тега
+CREATE TABLE top_artists as
+SELECT artists.artist_lastfm, artists.listeners_lastfm
+FROM artists LATERAL VIEW explode(split(tags_lastfm, ';')) artists as tagslm
+WHERE artists.tagslm IN (SELECT tags FROM top10)
+ORDER BY artists.listeners_lastfm DESC;
+
+-- отбираем топ10 самых популрных по кол-ву прослушиваний
+SELECT T.artist_lastfm
+FROM (
+    SELECT DISTINCT artist_lastfm, listeners_lastfm
+    FROM top_artists
+    ORDER BY listeners_lastfm DESC
+    LIMIT 10
+) T
+
 
 -- 4 любой другой инсайт на ваше усмотрение - 10 баллов
- -- Топ-10 популярных исполнителей (по скробблам) в России в категории рок. Скромно, но со вкусом :)
+-- Топ-10 популярных исполнителей (по скробблам) в России в категории рок. Скромно, но со вкусом :)
 SELECT artist_lastfm, SUM(scrobbles_lastfm) as sum_list 
 FROM artists LATERAL VIEW explode(split(tags_lastfm, ';')) l as tags
 WHERE tags = 'rock' AND country_lastfm = 'Russia'
