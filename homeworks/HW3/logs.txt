@@ -1,0 +1,17 @@
+-------  Simple example fo testing model ---------- START
+Predict values: {DenseVector(10.00000000000006, 28.000000000000014, 45.99999999999997, 35.00000000000001)}
+Actual values: {DenseVector(10.0, 28.0, 46.0, 35.0)}
+Predict weights: {DenseVector(3.000000000000019, 1.9999999999998512, 1.0000000000001135)}
+Actual weights: {DenseVector(3.0, 2.0, 1.0)}
+Train Loss: {1.1769804705897496E-27}
+--------------------------------------------------- END
+Training for real dataset ------------------------ START
+(X shape: ,150001,5)
+(X train: ,12000,5)
+(X test: ,3000,5)
+(y train: ,12000)
+(y test: ,3000)
+Train Loss: {2.671756591407202E-27}
+Test Loss: {2.671756591407202E-27}
+File with predcit save ---
+Training for real dataset ------------------------ END
